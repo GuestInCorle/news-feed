@@ -1,10 +1,39 @@
 /* eslint-env serviceworker */
 
+// TODO Import database via postMessage
+const database = {
+  articles: [
+    {id: 0, title: 'Начало серии'},
+    {id: 1, title: 'Кот-экскаватор'},
+    {id: 2, title: 'Очередная встреча'},
+    {id: 3, title: 'Удар из-за спины!'},
+    {id: 4, title: 'Рикошет'},
+  ],
+};
+
+setTimeout(async () => {
+  const index = Math.floor(Math.random() * database.articles.length);
+  const article = database.articles[index];
+  // noinspection JSIgnoredPromiseFromCall
+  await self.registration.showNotification(article.title, {
+    body: 'Нажмите, чтобы перейти к новости',
+    icon: self.notificationIcon || undefined,
+    // TODO Show image
+    // image: new URL(article.image, self.registration.scope).toString(),
+    tag: String(article.id),
+    renotify: false,
+    requireInteraction: true,
+    data: {
+      url: new URL(`article/${article.id}`, self.registration.scope).toString(),
+    },
+  });
+}, 10000);
+
 /**
  * Store notification icon string in service worker.
  * Ref: https://stackoverflow.com/a/35729334/2603230
  */
-self.addEventListener('message', event => {
+self.addEventListener('message', (event) => {
   let data;
   if (typeof event.data === 'string') {
     try {
@@ -20,14 +49,14 @@ self.addEventListener('message', event => {
 /**
  * Add support for push notification.
  */
-self.addEventListener('push', event => {
+self.addEventListener('push', (event) => {
   let payload;
   try {
     payload = event.data.json();
   } catch (e) {
     // If `event.data.text()` is not a JSON object, we just treat it
     // as a plain string and display it as the body.
-    payload = { title: '', body: event.data.text() };
+    payload = {title: '', body: event.data.text()};
   }
 
   const title = payload.title;
@@ -37,7 +66,10 @@ self.addEventListener('push', event => {
     data,
   };
   options.icon = data._icon || payload.icon || self.notificationIcon || null;
-  options.image = data._richContent && data._richContent.image ? options.data._richContent.image : payload.image;
+  options.image =
+    data._richContent && data._richContent.image
+      ? options.data._richContent.image
+      : payload.image;
   options.tag = data._tag || payload.collapseKey;
   if (options.tag) {
     options.renotify = data._renotify;
@@ -47,33 +79,40 @@ self.addEventListener('push', event => {
 });
 
 // https://developer.mozilla.org/en-US/docs/Web/API/Clients
-self.addEventListener('notificationclick', event => {
+self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
   event.waitUntil(
     (async () => {
       const allClients = await self.clients.matchAll({
         includeUncontrolled: true,
+        type: 'window',
       });
 
+      const url =
+        event.notification.data._webPath || event.notification.data.url || '/';
+      // const path = new URL(url).pathname;
+
       let appClient;
+      // const appClient = allClients[0]
+      //   ? allClients[0]
+      //   : await self.clients.openWindow(url);
+      // await appClient.focus();
 
-      const path = event.notification.data._webPath || '/';
-
-      // If we already have a window open, use it.
       for (const client of allClients) {
-        const url = new URL(client.url);
-
-        if (url.pathname === path) {
-          client.focus();
+        if (client.focused) {
           appClient = client;
           break;
         }
       }
 
-      // If there is no existing window, open a new one.
       if (!appClient) {
-        appClient = await self.clients.openWindow(path);
+        if (allClients.length > 0) {
+          appClient = allClients[0];
+          await appClient.focus();
+        } else {
+          appClient = await self.clients.openWindow(url);
+        }
       }
 
       // Message the client:
@@ -84,7 +123,7 @@ self.addEventListener('notificationclick', event => {
         data: event.notification.data,
         remote: !event.notification._isLocal,
       });
-    })()
+    })(),
   );
 });
 

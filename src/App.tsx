@@ -1,12 +1,14 @@
-import React, {FC, useCallback, useEffect, useState} from 'react';
-import {Linking, Platform, StyleSheet} from 'react-native';
+import React, {FC} from 'react';
+import {Platform, StyleSheet} from 'react-native';
 import {StatusBar} from 'expo-status-bar';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator, HeaderBackButton} from '@react-navigation/stack';
 import ArticleListScreen from './ArticleListScreen';
 import ArticleScreen from './ArticleScreen';
-import {LinkingOptions} from '@react-navigation/native/lib/typescript/src/types';
-import {addNotificationResponseReceivedListener} from 'expo-notifications';
+import SubscriptionText from './SubscriptionText';
+import useNotification from './useNotification';
+import linking from './linking';
+import navigationRef from './navigationRef';
 
 export type RootStackParamList = {
   ArticleList: undefined;
@@ -15,56 +17,30 @@ export type RootStackParamList = {
 
 const Stack = createStackNavigator<RootStackParamList>();
 
-const linking = {
-  prefixes: ['news-feed://'],
-  config: {
-    screens: {
-      initialRouteName: 'ArticleList',
-      ArticleList: {
-        path: '/',
-        exact: true,
-      },
-      Article: {
-        path: '/article/:id',
-        exact: false,
-        parse: {
-          id: (id: string) => parseInt(id, 10),
-        },
-        stringify: {
-          id: (id: number) => String(id),
-        },
-      },
-    },
-  },
-} as LinkingOptions;
-
 const App: FC = () => {
-  const [isReady, setReady] = useState(false);
-  const [lastUrl, setLastUrl] = useState('');
-  const onReady = useCallback(() => setReady(true), []);
-  useEffect(() => {
-    const subscription = addNotificationResponseReceivedListener((response) => {
-      const url = response.notification.request.content.data.url;
-      if (typeof url === 'string' && url.startsWith('news-feed://')) {
-        setLastUrl(url);
-      }
-    });
-    return () => subscription.remove();
-  }, []);
-  useEffect(() => {
-    if (isReady && lastUrl) {
-      // noinspection JSIgnoredPromiseFromCall
-      Linking.openURL(lastUrl);
-    }
-  }, [isReady, lastUrl]);
+  const onReady = useNotification();
   return (
     <>
       <StatusBar style="dark" />
-      <NavigationContainer linking={linking} onReady={onReady}>
+      <NavigationContainer
+        linking={linking}
+        ref={navigationRef}
+        onReady={onReady}>
         <Stack.Navigator mode="modal" initialRouteName="ArticleList">
           <Stack.Screen
             name="ArticleList"
-            options={{title: 'Новости'}}
+            options={{
+              title: 'Новости',
+              headerRight: (props) => (
+                <SubscriptionText
+                  style={{
+                    color: props.tintColor,
+                    textDecorationColor: props.tintColor,
+                  }}
+                />
+              ),
+              headerRightContainerStyle: styles.right,
+            }}
             component={ArticleListScreen}
           />
           <Stack.Screen
@@ -100,5 +76,8 @@ export default App;
 const styles = StyleSheet.create({
   card: {
     backgroundColor: 'transparent',
+  },
+  right: {
+    marginRight: 4,
   },
 });
