@@ -1,9 +1,9 @@
-import React, {FC, useLayoutEffect, useMemo} from 'react';
+import React, {FC, useLayoutEffect} from 'react';
 import {ImageBackground, Platform, StyleSheet, Text, View} from 'react-native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RootStackParamList} from './App';
 import {RouteProp} from '@react-navigation/native';
-import database from './database';
+import database, {Article} from './database';
 import ArticleContainerView from './ArticleContainerView';
 import ArticleContainerViewWeb, {modalPadding} from './ArticleContainerViewWeb';
 
@@ -19,10 +19,7 @@ const ArticleScreen: FC<{
   navigation: ArticleScreenNavigationProp;
 }> = ({route, navigation}) => {
   const id = route.params.id;
-  const article = useMemo(() => database.articles.find((_) => _.id === id), [
-    id,
-  ]);
-  // const article: Article | undefined = undefined;
+  const article: Article | undefined = database.articles[id];
   const modalVariant = Platform.OS === 'web' && navigation.canGoBack();
   useLayoutEffect(() => {
     if (article) {
