@@ -62,4 +62,4 @@ buck-out/
 web-build/
 
 # Generated Android sources
-/android/app/src/main/java/com/newsfeed/generated/
+android/app/src/main/java/com/newsfeed/generated/

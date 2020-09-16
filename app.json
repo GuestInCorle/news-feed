@@ -6,6 +6,9 @@
     "scheme": "news-feed",
     "slug": "news-feed",
     "version": "1.0.0",
+    "android": {
+      "useNextNotificationsApi": true
+    },
     "assetBundlePatterns": [
       "**/*"
     ]
