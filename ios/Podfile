@@ -78,7 +78,7 @@ target 'newsfeed' do
   pod 'glog', :podspec => '../node_modules/react-native/third-party-podspecs/glog.podspec'
   pod 'Folly', :podspec => '../node_modules/react-native/third-party-podspecs/Folly.podspec'
 
-  use_unimodules!
+  use_unimodules!(exclude: ['expo-barcode-scanner', 'expo-camera', 'expo-face-detector', 'expo-font', 'expo-image-loader', 'expo-sensors'])
   use_native_modules!
 
   # Enables Flipper.
