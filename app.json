@@ -3,6 +3,7 @@
   "displayName": "news-feed",
   "expo": {
     "name": "news-feed",
+    "scheme": "news-feed",
     "slug": "news-feed",
     "version": "1.0.0",
     "assetBundlePatterns": [

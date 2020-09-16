@@ -15,7 +15,7 @@ export type RootStackParamList = {
 const Stack = createStackNavigator<RootStackParamList>();
 
 const linking = {
-  prefixes: ['https://news-feed.com', 'news-feed://'],
+  prefixes: ['news-feed://'],
   config: {
     screens: {
       initialRouteName: 'ArticleList',
