@@ -59,7 +59,7 @@ const App: FC = () => {
   }, [isReady, lastUrl]);
   return (
     <>
-      <StatusBar style="auto" />
+      <StatusBar style="dark" />
       <NavigationContainer linking={linking} onReady={onReady}>
         <Stack.Navigator mode="modal" initialRouteName="ArticleList">
           <Stack.Screen

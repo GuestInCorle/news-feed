@@ -8,8 +8,16 @@ import {
 } from 'expo-notifications';
 import database from './src/database';
 import {Image, Platform} from 'react-native';
+import {requestPermissionsAsync} from 'expo-notifications';
 
 if (Platform.OS === 'android' || Platform.OS === 'ios') {
+  // FIXME Request permission before scheduling alert
+  requestPermissionsAsync({
+    ios: {
+      allowAlert: true,
+    },
+  });
+
   setNotificationHandler({
     handleNotification: async () => ({
       shouldShowAlert: true,
@@ -29,7 +37,9 @@ if (Platform.OS === 'android' || Platform.OS === 'ios') {
       data: {
         url: `news-feed://article/${article.id}`,
       },
-      attachments: [{url: Image.resolveAssetSource(article.image).uri}],
+      attachments: __DEV__
+        ? []
+        : [{url: Image.resolveAssetSource(article.image).uri}],
     },
     trigger: {
       seconds: 10,
